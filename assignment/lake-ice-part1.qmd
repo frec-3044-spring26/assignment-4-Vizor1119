@@ -290,6 +290,8 @@ Use the skills developed above to evaluate the question "Is the ice-off day of y
 
 Use a mix of code, figures, and text to present your analysis.  If you want to compare slopes, be sure they are on the same plot.
 
+
+
 ```{r}
 before <- sunapee |>
   filter(year < 1979)
@@ -300,7 +302,30 @@ after <- sunapee |>
 fit_before <- lm(ice_off_doy ~ year, data = before) 
 
 fit_after <- lm(ice_off_doy ~ year, data = after)
+
+sunapee |>
+  ggplot(aes(year, ice_off_doy)) +
+  geom_point() +
+  geom_line() +
+  geom_abline(
+    intercept = fit_before$coefficients[1],
+    slope = fit_before$coefficients[2],
+    color = "red",
+  ) +
+  geom_abline(
+    intercept = fit_after$coefficients[1],
+    slope = fit_after$coefficients[2],
+    color = "blue"
+  ) +
+  labs(
+    x = "Year",
+    y = "Ice off DOY",
+    title = "Ice off trends before and after 1970"
+  ) +
+  theme_classic()
 ```
+
+The slope before 1970 is -0.077 and the slope after 1970 is -0.302. Because the slope post 1970 is much more negative, ice off dates are shifting earlier at a faster rate in recent decades than it was. 
 
 
 # Rendering and committing
