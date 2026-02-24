@@ -257,9 +257,25 @@ The goal of this question is to make a forecast of the future ice-off day (with 
 - How wide is your confidence interval (number of days)?
 
 **Answer 11:**
-
+The predicted ice off day in 2040 is approximately day 103 of the year. Using the 5% and 95% residuals to construct a 90% CI, the predicted range is approximately 83 to 117 days. This gives us a range of about 34 days.
 ```{r}
+lower <- quantile(sunapee$resid, 0.05)
+upper <- quantile(sunapee$resid, 0.95)
 
+lower
+upper
+
+prediction <- 318.94856 + (-0.10602 * 2040)
+
+lower_ci <- prediction + lower
+upper_ci <- prediction + upper
+
+lower_ci
+upper_ci
+
+width <- upper_ci - lower_ci
+
+width
 ```
 
 # Is the ice-off day of the year changing more quickly in more recent years at Lake Sunapee?
