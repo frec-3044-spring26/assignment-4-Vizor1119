@@ -1,6 +1,6 @@
 ---
 title: "Lake Ice Phenology: Part 1"
-author: 'YOUR NAME'
+author: 'Aryan Khandelwal'
 format:
   html:
     embed-resources: true
@@ -18,6 +18,7 @@ The data are in a multi-sheet Excel file named `data/lake_ice_off_data.xlsx`. Yo
 For some reason, `read_excel()` does not like relative paths, so we will use the `here` package to locate your project on your computer. First, install the `here` package.  Then, run the `here()` function to get the path to your project.  Using `file.path()` appends the results of `here()` to the location of the data within your project/GitHub repository.
 
 ```{r}
+#install.packages("here")
 library(here)
 file_name <- file.path(here(),"data/lake_ice_off_data.xlsx")
 ```
@@ -25,14 +26,17 @@ file_name <- file.path(here(),"data/lake_ice_off_data.xlsx")
 Now use `read_excel()` to read in `file_name`. Remember that Excel files can have multiple sheets.
 
 ```{r}
+#install.packages("readxl")
 library(readxl)
+
+ice_data <- read_excel(file_name, sheet = 2)
 
 ```
 
 Now, look at a preview of the data using the `head()` function. The `doy` in `ice_off_doy` stands for "day of the year" and is the day within the year where ice off occurred (January 1 = doy 1).  `did_not_freeze` is a column where 1 = did not freeze and 0 = did freeze.
 
 ```{r}
-
+head(data)
 ```
 
 There should be four columns and \~2703 rows.
@@ -42,7 +46,9 @@ There should be four columns and \~2703 rows.
 We will practice key skills in the module using a focal lake. Use the `filter` function to filter the more extensive data to only contain the data from Lake Sunapee, a lake in New Hampshire. Filter the data `ice_data` by the variable `lake_name` to create a data frame called `sunapee`.
 
 ```{r}
-
+library(tidyverse)
+sunapee <- ice_data |>
+  filter(lake_name == "Sunapee")
 ```
 
 You will be using the `sunapee` data for the rest of the module until Question 11
@@ -58,10 +64,20 @@ Be sure that the title, x-axis, and y-axis labels are clearly labeled.
 **Answer 1:**
 
 ```{r}
-
+sunapee |>
+  ggplot(aes(year, ice_off_doy)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    x = "Year",
+    y = "Ice off day",
+    title = "Ice off days through the years"
+  ) +
+  theme_classic()
 ```
 
 # How does ice cover change over time at Lake Sunapee?
+Ice-off dates at Lake Sunapee occur earlier over time as shown by lower day of year values in recent years. Even though there is year to year variability, the overall trend is suggesting an earlier spring melt. 
 
 We want to model how the ice-off date changes over time. Our approach in this module is to use a linear regression that predicts the ice-off day of year as a function of the year. The `lm` function will estimate the parameters of the DOY = b + m \* YEAR linear regression where b is the intercept and m is the slope.
 
@@ -70,19 +86,26 @@ We want to model how the ice-off date changes over time. Our approach in this mo
 What do you expect the sign (plus, minus, or no change) to be for the slope of the relationship? Why?
 
 **Answer 2:**
+I expect the slope to be negative due to the fact that ice off is occurring earlier in the year over time. So as year increases, ice_off_doy decreases, creating a negative slope. 
 
 Use the `lm` function to predict `ice_off_doy` as a function (`~`) of the year for the data.frame called `sunapee`. You can learn more about the `lm` function [here](https://www.datacamp.com/tutorial/linear-regression-R)
 
 Create an object called `fit` that contains the results of the linear model.
 
 ```{r}
+sunapee <- sunapee |>
+  mutate(ice_off_doy = as.numeric(ice_off_doy))
+    
 
+fit <- lm(ice_off_doy ~ year, data = sunapee)
+
+fit
 ```
 
 Then, use the function `summary` to explore the result of the `lm` function.
 
 ```{r}
-
+summary(fit)
 ```
 
 The results of your linear model are in an object named `fit`, so you can find the regression coefficients at `fit$coefficients[1]` (the intercept) and `fit$coefficients[2]` (the slope). Confirm that `fit$coefficients[1]` and `fit$coefficients[2]` match the values expected from the summary command you ran above.
@@ -97,9 +120,9 @@ fit$coefficients[2]
 What is the direction of the slope? How does this match your expectations from Question 2?
 
 **Answer 3:**
-
+The slope is negative as expected from the previous question. 
 # Is our model any good?
-
+I think the model does a decent job of predicting ice off dates, assuming that ice off dates are linear. 
 ## R2
 
 First, it is important to understand how much variation is explained by the model using the R2 value in the `summary`. A value of R2 close to 1 means that the predictor (`year`) explains nearly all of the variation in the variable we are predicting: `ice_off_doy`. A value of R2 close to 0 explains very little of the variation in `ice_off_doy`. Since we want to be able to explain how `ice_off_doy` is changing over time using `year,` we are aiming for a high R2. A low R2 would indicate that our model isn't particularly good at explaining what future values of `ice_off_doy` will be.
@@ -109,6 +132,7 @@ First, it is important to understand how much variation is explained by the mode
 What is the R2 for the regression? Based on the R2, is `year` and `ice_off_doy` strongly related?
 
 **Answer 4:**
+The R^2 value is 0.2055 since its closer to 0 year and ice_off_doy are not strongly related.  
 
 ## Residuals normally distributed
 
@@ -140,6 +164,12 @@ Use the [`add_predictions()`](https://modelr.tidyverse.org/reference/add_predict
 **Answer 5:**
 
 ```{r}
+#install.packages("modelr")
+library(modelr)
+
+sunapee <- sunapee |>
+  add_predictions(fit) |>
+  add_residuals(fit)
 
 ```
 
@@ -152,7 +182,15 @@ Show Histogram and answer the following question: do the residuals meet the assu
 **Answer 6:**
 
 ```{r}
-
+sunapee |>
+  ggplot(aes(resid)) +
+  geom_histogram(binwidth = 10) +
+  labs(
+    x = "Residuals",
+    y = "Count",
+    title = "Linear models residuals"
+  ) +
+  theme_classic()
 ```
 
 
