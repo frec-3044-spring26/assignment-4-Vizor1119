@@ -290,6 +290,19 @@ Use the skills developed above to evaluate the question "Is the ice-off day of y
 
 Use a mix of code, figures, and text to present your analysis.  If you want to compare slopes, be sure they are on the same plot.
 
+```{r}
+before <- sunapee |>
+  filter(year < 1979)
+
+after <- sunapee |>
+  filter(year >= 1970)
+
+fit_before <- lm(ice_off_doy ~ year, data = before) 
+
+fit_after <- lm(ice_off_doy ~ year, data = after)
+```
+
+
 # Rendering and committing
 
 Remember to Render your document as HTML and comment+push to GitHub your code and rendered HTML that was created when you rendered the document. Your GitHub repository should have multiple commits with informative commit messages.
