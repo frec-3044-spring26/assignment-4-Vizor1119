@@ -180,7 +180,7 @@ Now, to visualize the residuals, use `geom_histogram()` to plot them as a histog
 Show Histogram and answer the following question: do the residuals meet the assumptions of the linear regression? (are the residuals normally distributed with the distribution centered around zero)?
 
 **Answer 6:**
-
+The residuals are roughly centered around 0 and symmetric. While the distribution is not perfectly normal, it does not have a strong skew to either side or any extreme outliers. We can reasonably assume that the distribution meets the assumptions of a linear model. 
 ```{r}
 sunapee |>
   ggplot(aes(resid)) +
